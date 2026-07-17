@@ -6,7 +6,7 @@
  * no connection pool needed.
  */
 
-import Database from 'better-sqlite3';
+import { initSqlite, PureDatabase } from './pure-sqlite.js';
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nitrostack/core';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -14,9 +14,9 @@ import { fileURLToPath } from 'url';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  private db!: Database.Database;
+  private db!: any;
 
-  onModuleInit() {
+  async onModuleInit() {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const dbPath = path.resolve(__dirname, '..', '..', 'data', 'frankenstein.db');
 
@@ -26,7 +26,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    this.db = new Database(dbPath);
+    await initSqlite();
+    this.db = new PureDatabase(dbPath);
     this.db.pragma('journal_mode = WAL');
 
     this.createTables();

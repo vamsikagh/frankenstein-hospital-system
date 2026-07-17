@@ -7,18 +7,19 @@
  */
 
 import { Injectable, InterceptorInterface, ExecutionContext } from '@nitrostack/core';
-import Database from 'better-sqlite3';
+import { initSqlite, PureDatabase } from '../data/pure-sqlite.js';
 import * as path from 'path';
 
 @Injectable()
 export class AuditInterceptor implements InterceptorInterface {
-  private db: Database.Database | null = null;
+  private db: any = null;
 
-  private getDb(): Database.Database | null {
+  private async getDb(): Promise<any> {
     if (this.db) return this.db;
     try {
       const dbPath = path.join(process.cwd(), 'data', 'frankenstein.db');
-      this.db = new Database(dbPath, { readonly: false });
+      await initSqlite();
+      this.db = new PureDatabase(dbPath);
       return this.db;
     } catch {
       return null;
@@ -35,7 +36,7 @@ export class AuditInterceptor implements InterceptorInterface {
       return result;
     }
 
-    const db = this.getDb();
+    const db = await this.getDb();
     if (db) {
       try {
         const id = `auto_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
