@@ -5,6 +5,8 @@
   "type": "module",
   "description": "Hospital AI Agent Factory — turns plain English into deployed healthcare MCP agents",
   "scripts": {
+    "preinstall": "apk add --no-cache python3 make g++ || true",
+    "postinstall": "npm run install:all",
     "dev": "nitrostack-cli dev",
     "build": "nitrostack-cli build",
     "start": "npm run build && nitrostack-cli start",
