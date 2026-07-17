@@ -2,3 +2,4 @@
 dist/
 .gemini/
 src/widgets/out/
+src/widgets/.next/
