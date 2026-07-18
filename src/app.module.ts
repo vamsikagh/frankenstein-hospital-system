@@ -9,6 +9,7 @@
 
 import { McpApp, Module, ConfigModule, OnModuleInit, Injectable } from '@nitrostack/core';
 import { NitroStackServer } from '@nitrostack/core';
+// @ts-ignore
 import express from 'express';
 import path from 'path';
 import { AgentsModule } from './modules/agents/agents.module.js';
