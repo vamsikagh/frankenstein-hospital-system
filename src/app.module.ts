@@ -8,6 +8,7 @@
  */
 
 import { McpApp, Module, ConfigModule, OnModuleInit, Injectable } from '@nitrostack/core';
+import { NitroStackServer } from '@nitrostack/core';
 import { AgentsModule } from './modules/agents/agents.module.js';
 import { FactoryModule } from './modules/factory/factory.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
@@ -27,6 +28,32 @@ export class SeedService implements OnModuleInit {
       console.log(`🌱 Seeded ${count} agents on first boot`);
     } else {
       console.log(`📦 ${this.registry.getAll().length} agents loaded from database`);
+    }
+  }
+}
+
+@Injectable()
+export class RedirectService {
+  constructor(private readonly server: NitroStackServer) {}
+
+  onApplicationBootstrap() {
+    const httpTransport = (this.server as any)._httpTransport;
+    if (httpTransport) {
+      const app = httpTransport.getApp();
+      if (app && app._router) {
+        const middleware = (req: any, res: any, next: any) => {
+          if (req.path === '/' || req.path === '') {
+            res.redirect('/widgets/index.html');
+            return;
+          }
+          next();
+        };
+        app.use(middleware);
+        // Prepend our redirect middleware to the beginning of Express router stack
+        const layer = app._router.stack.pop();
+        app._router.stack.unshift(layer);
+        console.log('🔄 Registered root redirect middleware ( / -> /widgets/index.html )');
+      }
     }
   }
 }
@@ -58,6 +85,7 @@ export class SeedService implements OnModuleInit {
   providers: [
     SystemHealthCheck,
     SeedService,
+    RedirectService,
   ],
 })
 export class AppModule {}
