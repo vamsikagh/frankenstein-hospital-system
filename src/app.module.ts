@@ -9,6 +9,8 @@
 
 import { McpApp, Module, ConfigModule, OnModuleInit, Injectable } from '@nitrostack/core';
 import { NitroStackServer } from '@nitrostack/core';
+import express from 'express';
+import path from 'path';
 import { AgentsModule } from './modules/agents/agents.module.js';
 import { FactoryModule } from './modules/factory/factory.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
@@ -41,6 +43,11 @@ export class RedirectService {
     if (httpTransport) {
       const app = httpTransport.getApp();
       if (app) {
+        // Serve the built widget assets statically
+        const widgetsPath = path.join(process.cwd(), 'src', 'widgets', 'out');
+        app.use('/widgets', express.static(widgetsPath));
+
+        // Redirect browser visits on root URL to the main dashboard page
         app.use((req: any, res: any, next: any) => {
           if (req.path === '/' || req.path === '') {
             res.redirect('/widgets/index.html');
@@ -48,7 +55,7 @@ export class RedirectService {
           }
           next();
         });
-        console.log('🔄 Registered root redirect middleware ( / -> /widgets/index.html )');
+        console.log('🔄 Registered widgets static folder & root redirect ( / -> /widgets/index.html )');
       }
     }
   }
