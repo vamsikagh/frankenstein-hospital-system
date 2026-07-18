@@ -40,18 +40,14 @@ export class RedirectService {
     const httpTransport = (this.server as any)._httpTransport;
     if (httpTransport) {
       const app = httpTransport.getApp();
-      if (app && app._router) {
-        const middleware = (req: any, res: any, next: any) => {
+      if (app) {
+        app.use((req: any, res: any, next: any) => {
           if (req.path === '/' || req.path === '') {
             res.redirect('/widgets/index.html');
             return;
           }
           next();
-        };
-        app.use(middleware);
-        // Prepend our redirect middleware to the beginning of Express router stack
-        const layer = app._router.stack.pop();
-        app._router.stack.unshift(layer);
+        });
         console.log('🔄 Registered root redirect middleware ( / -> /widgets/index.html )');
       }
     }
