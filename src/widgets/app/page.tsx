@@ -79,7 +79,22 @@ export default function StandaloneDashboard() {
   // MCP Connection States
   const [connected, setConnected] = useState(false);
   const [mcpEndpoint, setMcpEndpoint] = useState<string | null>(null);
-  const [connectingMsg, setConnectingMsg] = useState('Connecting to Frankenstein backend on port 3000...');
+  
+  const getApiBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (window.location.port === '3000') {
+          return window.location.origin;
+        }
+        return 'http://localhost:3000';
+      }
+      return window.location.origin;
+    }
+    return 'http://localhost:3000';
+  };
+
+  const apiBaseUrl = getApiBaseUrl();
+  const [connectingMsg, setConnectingMsg] = useState(`Connecting to Frankenstein backend at ${apiBaseUrl}...`);
   
   // Data States
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -114,12 +129,12 @@ export default function StandaloneDashboard() {
     let es: EventSource | null = null;
 
     const connectSSE = () => {
-      console.log('Connecting to SSE stream...');
-      es = new EventSource('http://localhost:3000/sse');
+      console.log(`Connecting to SSE stream at ${apiBaseUrl}/sse...`);
+      es = new EventSource(`${apiBaseUrl}/sse`);
 
       es.addEventListener('endpoint', (event: any) => {
         const url = event.data; // e.g. "/mcp?sessionId=123"
-        const fullUrl = new URL(url, 'http://localhost:3000').toString();
+        const fullUrl = new URL(url, apiBaseUrl).toString();
         setMcpEndpoint(fullUrl);
         setConnected(true);
         console.log('MCP Endpoint established:', fullUrl);
@@ -159,7 +174,7 @@ export default function StandaloneDashboard() {
         console.error('SSE connection error:', err);
         setConnected(false);
         setMcpEndpoint(null);
-        setConnectingMsg('Cannot reach server on http://localhost:3000. Is "npx nitrostack-cli start" running?');
+        setConnectingMsg(`Cannot reach server on ${apiBaseUrl}. Is "npx nitrostack-cli start" running?`);
       };
     };
 
